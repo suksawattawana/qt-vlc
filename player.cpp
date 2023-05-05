@@ -22,8 +22,8 @@ Mwindow::Mwindow() {
     vlcPlayer = NULL;
 
     /* Initialize libVLC */
-    const char* argv[] = {"--no-hw-dec", "--dec-dev=none", "--video-filter=transform", "--transform-type=270"};
-    vlcInstance = libvlc_new(4, argv);
+    const char* argv[] = {"--avcodec-hw=none", "--video-filter=transform", "--transform-type=270"};
+    vlcInstance = libvlc_new(3, argv);
 
 
     /* Complain in case of broken installation */
@@ -132,12 +132,12 @@ void Mwindow::openFile() {
         stop();
 
     /* Create a new Media */
-    libvlc_media_t *vlcMedia = libvlc_media_new_path(qtu(fileOpen));
+    libvlc_media_t *vlcMedia = libvlc_media_new_path(vlcInstance, qtu(fileOpen));
     if (!vlcMedia)
         return;
 
     /* Create a new libvlc player */
-    vlcPlayer = libvlc_media_player_new_from_media(vlcInstance, vlcMedia);
+    vlcPlayer = libvlc_media_player_new_from_media(vlcMedia);
 
     /* Release the media */
     libvlc_media_release(vlcMedia);
@@ -150,6 +150,7 @@ void Mwindow::openFile() {
 #elif defined(Q_OS_WIN)
     libvlc_media_player_set_hwnd(vlcPlayer, (HWND)videoWidget->winId());
 #endif
+
 
     /* And start playback */
     libvlc_media_player_play (vlcPlayer);
@@ -187,7 +188,7 @@ int Mwindow::changeVolume(int vol) { /* Called on volume slider change */
 void Mwindow::changePosition(int pos) { /* Called on position slider change */
 
     if (vlcPlayer)
-        libvlc_media_player_set_position(vlcPlayer, (float)pos/1000.0, true);
+        libvlc_media_player_set_position(vlcPlayer, (float)pos/1000.0);
 }
 
 void Mwindow::updateInterface() { //Update interface and check if song is finished
@@ -207,7 +208,7 @@ void Mwindow::updateInterface() { //Update interface and check if song is finish
 void Mwindow::stop() {
     if(vlcPlayer) {
         /* stop the media player */
-        libvlc_media_player_stop_async(vlcPlayer);
+        libvlc_media_player_stop(vlcPlayer);
 
         /* release the media player */
         libvlc_media_player_release(vlcPlayer);
@@ -221,17 +222,19 @@ void Mwindow::stop() {
 
 void Mwindow::mute() {
     if(vlcPlayer) {
-        if(volumeSlider->value() == 0) { //if already muted...
+//        if(volumeSlider->value() == 0) { //if already muted...
 
-                this->changeVolume(80);
-                volumeSlider->setValue(80);
+//                this->changeVolume(80);
+//                volumeSlider->setValue(80);
 
-        } else { //else mute volume
+//        } else { //else mute volume
 
-                this->changeVolume(0);
-                volumeSlider->setValue(0);
+//                this->changeVolume(0);
+//                volumeSlider->setValue(0);
 
-        }
+//        }
+
+        libvlc_video_set_track(vlcPlayer, 1);
     }
 }
 
